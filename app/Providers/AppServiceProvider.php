@@ -2,8 +2,10 @@
 
 namespace App\Providers;
 
+use App\Models\User;
+use App\Repositories\UserRepository;
 use Illuminate\Support\ServiceProvider;
-
+use
 class AppServiceProvider extends ServiceProvider
 {
     /**
