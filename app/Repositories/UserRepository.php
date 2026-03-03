@@ -34,12 +34,23 @@ class UserRepository
         if (array_key_exists('name', $validated)) {
             $user->name = $validated['name'];
         }
-        $user->email = $validated['email'];
+        if ($user->email !== $validated['email']) {
+            $user->email = $validated['email'];
+        }
 
         if ($request->filled('password')) {
             $user->password = bcrypt($validated['password']);
         }
 
+        if ($request->hasFile('avatar') && $request->file('avatar')->isValid()) {
+            // Удаляем старый аватар, если был
+            if ($user->avatar) {
+                Storage::delete($user->avatar);
+            }
+
+            $path = $request->file('avatar')->store('avatars', 'public');
+            $user->avatar = $path;
+        }
         $user->save();
 
         return $user->refresh();

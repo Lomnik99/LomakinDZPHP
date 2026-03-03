@@ -31,7 +31,7 @@ class UpdateUserRequest extends FormRequest
                 'nullable',
                 'min:8',
             ],
-            'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg',
+            'avatar' => ['nullable', 'image'],
         ];
     }
 
