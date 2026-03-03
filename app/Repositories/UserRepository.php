@@ -2,9 +2,14 @@
 
 namespace App\Repositories;
 
+use App\Http\Requests\StoreUserRequest;
+use App\Http\Requests\UpdateUserRequest;
 use App\Models\User;
-use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class UserRepository
 {
@@ -22,27 +27,25 @@ class UserRepository
 
         return $this->model->create($data);
     }
-    public function update(User $user, array $data): User
+    final public function update(UpdateUserRequest $request, User $user): User
     {
-        if (isset($data['password'])) {
-            $data['password'] = bcrypt($data['password']);
+        $validated = $request->validated();
+
+        if (array_key_exists('name', $validated)) {
+            $user->name = $validated['name'];
+        }
+        $user->email = $validated['email'];
+
+        if ($request->filled('password')) {
+            $user->password = bcrypt($validated['password']);
         }
 
-        $user->update($data);
+        $user->save();
 
-        return $user;
+        return $user->refresh();
     }
     public function delete(User $user): bool
     {
         return $user->delete();
-    }
-    public function findOrFail(int $id): User
-    {
-        return $this->model->findOrFail($id);
-    }
-
-    public function all(): Collection
-    {
-        return $this->model->all();
     }
 }

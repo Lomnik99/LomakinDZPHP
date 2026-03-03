@@ -7,9 +7,6 @@ use Illuminate\Validation\Rules\Password;
 
 class StoreUserRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
         return true;
@@ -18,19 +15,25 @@ class StoreUserRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
-            'password' => ['required', 'confirmed', Password::defaults()],
+            'name' => 'required|max:255',
+            'email' => 'required|email|max:255|unique:users',
+            'password' => 'required|min:6|confirmed',
         ];
     }
 
     public function messages(): array
     {
         return [
-            'name.required' => 'Поле имя обязательно.',
+            'name.required' => 'Поле "Имя" обязательно.',
+            'name.max' => 'Имя не может быть длиннее 255 символов.',
+
             'email.required' => 'Email обязателен.',
+            'email.email' => 'Введите корректный адрес электронной почты.',
+            'email.max' => 'Email не может быть длиннее 255 символов.',
             'email.unique' => 'Этот email уже зарегистрирован.',
+
             'password.required' => 'Пароль обязателен.',
+            'password.min' => 'Пароль должен содержать минимум 6 символов.',
             'password.confirmed' => 'Пароли не совпадают.',
 
         ];

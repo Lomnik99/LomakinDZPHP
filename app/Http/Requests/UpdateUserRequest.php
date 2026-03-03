@@ -14,27 +14,43 @@ class UpdateUserRequest extends FormRequest
 
     public function rules(): array
     {
-        $userId = $this->route('user');
+        $user = $this->route()->parameter('user');
 
         return [
-            'name' => ['sometimes', 'required', 'string', 'max:255'],
-            'email' => [
-                'sometimes',
+            'name' => [
                 'required',
                 'string',
-                'email',
                 'max:255',
-                Rule::unique('users')->ignore($userId),
             ],
-            'password' => ['sometimes', 'nullable', 'string', 'min:8', 'confirmed'],
+            'email' => [
+                'required',
+                'email',
+                Rule::unique('users')->ignore($user->id),
+            ],
+            'password' => [
+                'nullable',
+                'min:8',
+            ],
+            'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg',
         ];
     }
 
     public function messages(): array
     {
         return [
-            'name.required' => 'Имя обязательно для заполнения.',
-            'email.unique' => 'Этот email уже используется.',
+            // Сообщения для поля name
+            'name.max' => 'Имя не может быть длиннее 255 символов.',
+
+            // Сообщения для поля email
+            'email.required' => 'Поле "Email" обязательно для заполнения.',
+            'email.email' => 'Введите корректный адрес электронной почты.',
+            'email.max' => 'Email не может быть длиннее 255 символов.',
+            'email.unique' => 'Пользователь с таким email уже зарегистрирован.',
+
+            // Сообщения для поля password
+            'password.required' => 'Поле "Пароль" обязательно для заполнения.',
+            'password.min' => 'Пароль должен содержать минимум 6 символов.',
+            'password.confirmed' => 'Пароли не совпадают.',
         ];
     }
 }

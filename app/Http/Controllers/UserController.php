@@ -2,24 +2,36 @@
 
 namespace App\Http\Controllers;
 
+use App\Filters\UserFilters;
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Repositories\UserRepository;
 use App\Models\User;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\View\View;
+use function Laravel\Prompts\select;
 
 class UserController extends Controller
 {
-    protected $userRepository;
-
-    public function __construct(UserRepository $userRepository)
+    public function __construct(
+        private readonly UserRepository $userRepository,
+        private readonly UserFilters    $userFilters
+    )
     {
-        $this->userRepository = $userRepository;
     }
 
-    public function index()
+    public function index(Request $request): View
     {
-        $users = $this->userRepository->all();
-        return view('users.index', compact('users'));
+        $users = User::query();
+
+        return view('users.index', [
+            'users' => $this->userFilters
+                ->apply($request, $users)
+                ->paginate(10)
+                ->withQueryString(),
+        ]);
     }
 
     public function store(StoreUserRequest $request)
@@ -30,7 +42,8 @@ class UserController extends Controller
 
     public function update(UpdateUserRequest $request, User $user)
     {
-        $user = $this->userRepository->update($user, $request->validated());
+        $this->userRepository->update($request, $user);
+
         return redirect()->route('users.index')->with('success', 'Пользователь обновлён');
     }
 
@@ -38,5 +51,19 @@ class UserController extends Controller
     {
         $this->userRepository->delete($user);
         return redirect()->route('users.index')->with('success', 'Пользователь удалён');
+    }
+    public function show(User $user)
+    {
+        return view('users.show', [
+            'user' => $user,
+        ]);
+    }
+    public function create()
+    {
+        return view('users.create');
+    }
+    public function edit(user $user )
+    {
+        return view('users.edit', compact('user'));
     }
 }
